@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-use rustysynth::SampleHeader;
+use magnetite_midi::SampleHeader;
 
 pub fn check(sample: &SampleHeader, values: &[i32; 7]) {
     assert_eq!(sample.get_start(), values[0]);

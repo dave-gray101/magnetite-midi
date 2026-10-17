@@ -1,15 +1,16 @@
-# RustySynth
+# Magnetite-MIDI
 
-RustySynth is a SoundFont MIDI synthesizer written in pure Rust, ported from [MeltySynth](https://github.com/sinshu/meltysynth).
+Magnetite-MIDI is a pure Rust SoundFont MIDI synethesizer. It is heavily based on [RustySynth](https://github.com/sinshu/rustysynth).
 
+While RustySynth is focused on simplicity, this fork prioritizes performance and features, with a specific goal of supporting [Black MIDI](https://en.wikipedia.org/wiki/Black_MIDI) files.
 
+## Changes from mainline RustySynth
 
-## Features
-
-* Suitable for both real-time and offline synthesis.
-* Supports standard MIDI files with additional features including dynamic tempo changing.
-* No dependencies other than the standard library.
-
+* Effectively unlimited maximum polyphony
+* Processes BiQuadFilters 4 at a time, in order to take advantage of SIMD
+* Skipping bounds checks where provably safe
+* Caching voice panning angles
+* OPTIONAL support for dynamic allocation of voices at runtime
 
 
 ## Examples
@@ -101,4 +102,4 @@ sequencer.render(&mut left[..], &mut right[..]);
 
 ## License
 
-RustySynth is available under [the MIT license](LICENSE.txt).
+Magnetite-MIDI is available under [the MIT license](LICENSE.txt).

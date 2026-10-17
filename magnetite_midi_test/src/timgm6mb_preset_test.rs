@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 
-use rustysynth::SoundFont;
+use magnetite_midi::SoundFont;
 use std::fs::File;
 use std::path::PathBuf;
 

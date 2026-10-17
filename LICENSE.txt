@@ -1,5 +1,8 @@
 MIT License
 
+Magnetite-MIDI:
+Copyright (C) 2026 Dave Lee
+
 MeltySynth:
 Copyright (C) 2021 Nobuaki Tanaka
 

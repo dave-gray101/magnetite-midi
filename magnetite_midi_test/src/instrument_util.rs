@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-use rustysynth::InstrumentRegion;
-use rustysynth::LoopMode;
+use magnetite_midi::InstrumentRegion;
+use magnetite_midi::LoopMode;
 
 fn are_equal(x: f64, y: f64) -> bool {
     if x.floor() == x.ceil() && y.floor() == y.ceil() {

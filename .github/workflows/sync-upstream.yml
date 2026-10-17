@@ -1,0 +1,94 @@
+name: Sync upstream
+
+# Tracks sinshu/rustysynth. New upstream commits are merged into the
+# `upstream-sync` branch and proposed to `main` as a pull request, so CI and a
+# human review happen before anything lands. If the merge conflicts, an issue is
+# opened instead so the conflict can be resolved by hand.
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  UPSTREAM_REPO: https://github.com/sinshu/rustysynth.git
+  UPSTREAM_BRANCH: main
+  SYNC_BRANCH: upstream-sync
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream "$UPSTREAM_REPO"
+          git fetch upstream "$UPSTREAM_BRANCH"
+
+      - name: Check for new upstream commits
+        id: check
+        run: |
+          behind=$(git rev-list --count "HEAD..upstream/$UPSTREAM_BRANCH")
+          echo "behind=$behind" >> "$GITHUB_OUTPUT"
+          echo "main is $behind upstream commit(s) behind"
+
+      - name: Merge upstream into sync branch
+        id: merge
+        if: steps.check.outputs.behind != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$SYNC_BRANCH" main
+          if git merge --no-ff -m "Merge upstream $UPSTREAM_BRANCH into $SYNC_BRANCH" "upstream/$UPSTREAM_BRANCH"; then
+            echo "conflict=false" >> "$GITHUB_OUTPUT"
+            git push --force-with-lease origin "$SYNC_BRANCH"
+          else
+            echo "conflict=true" >> "$GITHUB_OUTPUT"
+            git merge --abort
+          fi
+
+      - name: Open or update pull request
+        if: steps.merge.outputs.conflict == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          body="Automated merge of [sinshu/rustysynth](https://github.com/sinshu/rustysynth) \`$UPSTREAM_BRANCH\` (now at \`$(git rev-parse --short "upstream/$UPSTREAM_BRANCH")\`).
+
+          Review the changes, make sure CI passes, and merge with a **merge commit** (not squash/rebase) so future syncs only see new upstream commits."
+          if [ -z "$(gh pr list --head "$SYNC_BRANCH" --base main --state open --json number --jq '.[].number')" ]; then
+            gh pr create --head "$SYNC_BRANCH" --base main \
+              --title "Sync with upstream rustysynth" --body "$body"
+          else
+            echo "A sync PR is already open; branch updated."
+          fi
+
+      - name: Report merge conflict
+        if: steps.merge.outputs.conflict == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Upstream sync has merge conflicts"
+          if [ -z "$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[].number')" ]; then
+            gh issue create --title "$title" --body "Merging \`sinshu/rustysynth@$UPSTREAM_BRANCH\` into \`main\` conflicts. Resolve locally:
+
+          \`\`\`
+          git remote add upstream $UPSTREAM_REPO   # once
+          git fetch upstream
+          git checkout -b $SYNC_BRANCH main
+          git merge upstream/$UPSTREAM_BRANCH
+          # resolve conflicts, then push and open a PR
+          \`\`\`"
+          fi

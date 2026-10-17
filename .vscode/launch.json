@@ -31,10 +31,10 @@
                     "test",
                     "--no-run",
                     "--lib",
-                    "--package=rustysynth"
+                    "--package=magnetite_midi"
                 ],
                 "filter": {
-                    "name": "rustysynth",
+                    "name": "magnetite_midi",
                     "kind": "lib"
                 }
             },
@@ -50,10 +50,10 @@
                     "test",
                     "--no-run",
                     "--lib",
-                    "--package=rustysynth_test"
+                    "--package=magnetite_midi_test"
                 ],
                 "filter": {
-                    "name": "rustysynth_test",
+                    "name": "magnetite_midi_test",
                     "kind": "lib"
                 }
             },

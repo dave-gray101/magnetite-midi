@@ -1,8 +1,8 @@
-use rustysynth::MidiFile;
-use rustysynth::MidiFileSequencer;
-use rustysynth::SoundFont;
-use rustysynth::Synthesizer;
-use rustysynth::SynthesizerSettings;
+use magnetite_midi::MidiFile;
+use magnetite_midi::MidiFileSequencer;
+use magnetite_midi::SoundFont;
+use magnetite_midi::Synthesizer;
+use magnetite_midi::SynthesizerSettings;
 use std::fs::File;
 use std::io::Write;
 use std::sync::Arc;

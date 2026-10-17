@@ -2,8 +2,8 @@
 
 members = [
     "example",
-    "rustysynth",
-    "rustysynth_test",
+    "magnetite_midi",
+    "magnetite_midi_test",
 ]
 
 resolver = "2"
