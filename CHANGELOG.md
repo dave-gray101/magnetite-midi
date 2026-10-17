@@ -1,3 +1,14 @@
+# v0.1.0
+
+First release of Magnetite-MIDI, a fork of RustySynth. Based on rustysynth v1.3.7; the entries below this one are upstream's history.
+
+- Renamed the crate to `magnetite_midi`.
+- Maximum polyphony can now be set up to 16,777,216 voices (previously 256); the lowest-priority voice is only stolen when all are in use.
+- Added `SynthesizerSettings::initial_polyphony` to optionally allocate voices on demand at runtime instead of all up front.
+- Process `BiQuadFilter`s four at a time to take advantage of SIMD.
+- Skip bounds checks where provably safe.
+- Cache voice panning angles.
+
 # v1.3.7
 
 - Fixed potential IO issue.
