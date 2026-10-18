@@ -1,8 +1,9 @@
 [package]
 name = "magnetite_midi"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Nobuaki Tanaka", "Dave Lee"]
 edition = "2021"
+rust-version = "1.87"
 
 description = "A SoundFont MIDI synthesizer written in pure Rust"
 documentation = "https://docs.rs/magnetite_midi/latest/magnetite_midi/"
@@ -12,4 +13,46 @@ license = "MIT"
 keywords = ["soundfont", "midi", "synthesizer", "audio", "music"]
 categories = ["multimedia::audio"]
 
+[features]
+# The synthesizer itself (everything upstream has) needs nothing and is always there. These are additions of this fork, each off until asked for (see DIVERGENCE.md).
+default = []
+# Standard MIDI Files as a lossless model (`Smf`, `TempoMap`, a writer), `MidiMessage`, and `MidiFile::from_smf` to play one.
+smf = ["dep:midly"]
+# A streaming reader for very large files: notes, markers and text events without the owned event list.
+scan = ["smf"]
+# Render a file to audio through a SoundFont on several threads, with a limiter, for files with millions of notes.
+render = ["scan"]
+# MIDI ports in and out (through `midir`), behind a trait with a mock for tests.
+device = ["dep:midir"]
+# Karaoke (.kar) lyrics: the `@` headers and syllable conventions of a MIDI file's text events. Never implied by another feature.
+karaoke = ["scan"]
+# `Serialize` and `Deserialize` for the plain types.
+serde = ["dep:serde"]
+
 [dependencies]
+midly = { version = "0.5", default-features = false, features = ["std", "alloc"], optional = true }
+midir = { version = "0.11", optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
+
+[[test]]
+name = "smf"
+required-features = ["smf"]
+
+[[test]]
+name = "scan"
+required-features = ["scan"]
+
+[[test]]
+name = "agreement"
+required-features = ["scan"]
+
+[[test]]
+name = "render"
+required-features = ["render"]
+
+[[test]]
+name = "device"
+required-features = ["device"]
+
+[package.metadata.docs.rs]
+all-features = true

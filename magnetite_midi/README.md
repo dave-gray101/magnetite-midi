@@ -13,6 +13,25 @@ While RustySynth is focused on simplicity, this fork prioritizes performance and
 * OPTIONAL support for dynamic allocation of voices at runtime
 
 
+## Optional features
+
+The synthesizer needs no dependencies. Everything else is behind a cargo feature that is off until you ask for it. What differs from RustySynth, and why, is in [DIVERGENCE.md](https://github.com/dave-gray101/magnetite-midi/blob/main/DIVERGENCE.md).
+
+| Feature | Adds |
+|---|---|
+| `smf` | `MidiMessage`, `Smf` (a Standard MIDI File as written, with a tempo map and a writer) and `MidiFile::from_smf` to play one with the sequencer |
+| `scan` | a streaming reader for very large files (notes, markers and text without the owned event list) |
+| `render` | render a file to audio on several threads with a limiter, a shared SoundFont cache, and a tiny SoundFont for tests |
+| `device` | MIDI ports through `midir`, behind a trait with a mock |
+| `karaoke` | `.kar` lyrics. Not implied by any other feature |
+| `serde` | `Serialize` and `Deserialize` for the plain types |
+
+```
+cargo add magnetite_midi --features render
+```
+
+`MidiFile` is the file compiled for playback (messages in seconds, everything else dropped); `Smf` is the file as written, which is what to read, inspect or write. The crate needs Rust 1.87 or newer, with or without features (the synthesizer itself, as in RustySynth 1.3.7, uses `is_multiple_of`, stable since 1.87).
+
 ## Examples
 
 An example code to synthesize a simple chord:

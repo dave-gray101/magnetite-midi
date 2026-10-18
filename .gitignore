@@ -20,4 +20,4 @@ Cargo.lock
 *.mid
 
 # Used for tests
-!samples/*
+!**/samples/*

@@ -14,6 +14,7 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  actions: write # to start CI on the sync branch (see the step after the pull request)
 
 env:
   UPSTREAM_REPO: https://github.com/sinshu/rustysynth.git
@@ -74,6 +75,13 @@ jobs:
           else
             echo "A sync PR is already open; branch updated."
           fi
+
+      # A pull request opened with the built-in token does not start workflows, so CI is started for the sync branch directly: its result shows on the pull request.
+      - name: Run CI on the sync branch
+        if: steps.merge.outputs.conflict == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run ci.yml --ref "$SYNC_BRANCH"
 
       - name: Report merge conflict
         if: steps.merge.outputs.conflict == 'true'

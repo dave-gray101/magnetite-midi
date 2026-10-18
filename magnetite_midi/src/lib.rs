@@ -62,3 +62,17 @@ pub use self::soundfont_info::SoundFontInfo;
 pub use self::soundfont_version::SoundFontVersion;
 pub use self::synthesizer::Synthesizer;
 pub use self::synthesizer_settings::SynthesizerSettings;
+
+// Additions of this fork, each behind a feature and in a module of the same name (see DIVERGENCE.md): nothing above this line is changed by them.
+#[cfg(feature = "device")]
+pub mod device;
+#[cfg(feature = "karaoke")]
+pub mod karaoke;
+#[cfg(feature = "render")]
+pub mod render;
+#[cfg(feature = "scan")]
+pub mod scan;
+#[cfg(feature = "smf")]
+pub mod smf;
+#[cfg(feature = "smf")]
+pub use self::smf::MidiMessage;

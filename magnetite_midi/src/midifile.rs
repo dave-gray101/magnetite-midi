@@ -272,7 +272,7 @@ impl MidiFile {
         }
     }
 
-    fn merge_tracks(
+    pub(crate) fn merge_tracks(
         message_lists: &[Vec<Message>],
         tick_lists: &[Vec<i32>],
         resolution: i32,

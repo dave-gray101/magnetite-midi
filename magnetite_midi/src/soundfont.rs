@@ -132,10 +132,7 @@ mod tests {
     use std::{fs::File, path::PathBuf};
 
     fn samples_dir_path() -> PathBuf {
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .parent()
-            .unwrap()
-            .join("samples")
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("samples")
     }
 
     #[test]

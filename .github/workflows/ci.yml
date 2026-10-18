@@ -1,0 +1,119 @@
+name: CI
+
+# What a change to `magnetite_midi` must pass: formatting, lints, the tests on three systems, every feature on its own, the minimum Rust version the crate declares, the
+# documentation, and a package that builds and passes its own tests when extracted (the published crate, not the repository).
+#
+# Only the `magnetite_midi` crate is tested. `magnetite_midi_test` reads SoundFonts that are not in the repository (see "Running the tests" in the README).
+#
+# Runs on pushes to `main`, on pull requests, and by hand. The daily upstream sync (`sync-upstream.yml`) starts it for the `upstream-sync` branch itself: a pull request opened with
+# the built-in token does not start workflows.
+
+on:
+  push:
+    branches: [main, upstream-sync]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fmt:
+    name: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cargo fmt --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # `device` talks to ALSA on Linux
+      - run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config
+      - run: cargo clippy -p magnetite_midi --all-features --all-targets -- -D warnings
+
+  test:
+    name: Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config
+      # the synthesizer alone, then everything
+      - run: cargo test -p magnetite_midi
+      - run: cargo test -p magnetite_midi --all-features
+
+  features:
+    name: Each feature on its own
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config
+      - name: Build with each feature alone
+        run: |
+          for feature in smf scan render device karaoke serde; do
+            echo "::group::$feature"
+            cargo check -p magnetite_midi --no-default-features --features "$feature" --all-targets
+            echo "::endgroup::"
+          done
+
+  msrv:
+    name: Minimum Rust version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config
+      - name: Install the Rust the crate declares
+        run: |
+          msrv=$(grep -m1 '^rust-version' magnetite_midi/Cargo.toml | cut -d'"' -f2)
+          echo "the crate declares Rust $msrv"
+          echo "MSRV=$msrv" >> "$GITHUB_ENV"
+          rustup toolchain install "$msrv" --profile minimal
+      # The lockfile is not committed, so the dependencies are chosen here: by the old compiler itself, preferring versions that it can build. A failure then
+      # means that a dependency needs a newer Rust than the crate declares, or that the crate does.
+      - name: Check the synthesizer alone
+        env:
+          CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS: fallback
+        run: cargo +"$MSRV" check -p magnetite_midi --all-targets
+      - name: Check every feature
+        env:
+          CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS: fallback
+        run: cargo +"$MSRV" check -p magnetite_midi --all-targets --all-features
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config
+      - name: Build the docs as docs.rs does, with every feature, and no warning
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc -p magnetite_midi --all-features --no-deps
+
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config
+      - name: Package the crate and build it from the package
+        run: cargo package -p magnetite_midi
+      # what a distribution packager does with the published crate: unpack it and run its tests
+      - name: Test the package as extracted
+        run: |
+          cd target/package/magnetite_midi-*/
+          cargo test --all-features

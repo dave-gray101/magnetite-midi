@@ -12,6 +12,19 @@ While RustySynth is focused on simplicity, this fork prioritizes performance and
 * Caching voice panning angles
 * OPTIONAL support for dynamic allocation of voices at runtime
 
+## Optional features
+
+The original RustySynth synthesizer needs no dependencies. Everything else is behind a cargo feature that is off until you ask for it. What differs from RustySynth, and why, is in [DIVERGENCE.md](https://github.com/dave-gray101/magnetite-midi/blob/main/DIVERGENCE.md).
+
+| Feature | Adds |
+|---|---|
+| `smf` | `MidiMessage`, `Smf` (a Standard MIDI File as written, with a tempo map and a writer) and `MidiFile::from_smf` to play one with the sequencer |
+| `scan` | a streaming reader for very large files (notes, markers and text without the owned event list) |
+| `render` | render a file to audio on several threads with a limiter, a shared SoundFont cache, and a tiny SoundFont for tests |
+| `device` | MIDI ports through `midir`, behind a trait with a mock |
+| `karaoke` | `.kar` lyrics. Not implied by any other feature |
+| `serde` | `Serialize` and `Deserialize` for the plain types |
+
 
 
 ## Installation
@@ -23,6 +36,30 @@ cargo add magnetite_midi
 ```
 
 
+
+## Optional features
+
+The synthesizer needs no dependencies. Everything else is behind a feature that is off until you ask for it (what differs from RustySynth, and why, is in [DIVERGENCE.md](DIVERGENCE.md)):
+
+| Feature | Adds |
+|---|---|
+| `smf` | `MidiMessage`, `Smf` (a Standard MIDI File as written, with a tempo map and a writer) and `MidiFile::from_smf` |
+| `scan` | a streaming reader for very large files |
+| `render` | render a file to audio on several threads, a SoundFont cache, a tiny SoundFont for tests |
+| `device` | MIDI ports through `midir`, with a mock |
+| `karaoke` | `.kar` lyrics |
+| `serde` | `Serialize` and `Deserialize` for the plain types |
+
+```
+cargo add magnetite_midi --features render
+```
+
+## Running the tests
+
+Some tests read SoundFonts that are not in the repository (they are git-ignored, and a packaged crate does not contain them, so they fail there; they are not run when publishing). Put them in the repository's root:
+
+* `TimGM6mb.sf2`: from the Debian package `timgm6mb-soundfont`, or MuseScore's soundfont page (GPL-2).
+* `GeneralUser GS MuseScore v1.442.sf2`: S. Christian Collins' edition for MuseScore (free for any use). The author's own download link is gone; the original zip is in the Internet Archive: <https://web.archive.org/web/2019id_/http://www.schristiancollins.com/soundfonts/GeneralUser_GS_1.442-MuseScore.zip>. The file's SHA-256 is `d910e139f619048b331d72d2e0867f1729f9725e2a97a6be32b09b8b5b5c4b12`.
 
 ## Examples
 

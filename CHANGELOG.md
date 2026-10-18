@@ -1,3 +1,17 @@
+# v0.2.0
+
+New, optional, and off by default: with no features the crate is as before. See [DIVERGENCE.md](DIVERGENCE.md).
+
+- `smf` feature: `MidiMessage`, `Smf` (a Standard MIDI File as written: every event at its tick, a tempo map with bars and beats, notes, a writer, tolerant of damaged files, format 2 and RMID, and keeping where the file says it ends), key-signature and MIDI-sniffing helpers, and `MidiFile::from_smf` / `from_smf_with_loop_type` to play an `Smf` with the sequencer.
+- `scan` feature: a streaming reader (`scan`, `NoteTable`) for files with millions of notes. It and `Smf` share their definitions of the tempo map, key signatures and notes.
+- `render` feature: render a file to audio on several threads with a limiter (`render::render`), a shared SoundFont cache (`load_soundfont`) and a tiny test SoundFont (`tiny_soundfont`).
+- `device` feature: MIDI ports through `midir` behind a trait, with a mock for tests.
+- `karaoke` feature: `.kar` lyrics (`karaoke::parse`, `karaoke::read`).
+- `serde` feature: `Serialize` and `Deserialize` for the plain types.
+- `rust-version = "1.87"`: the real minimum (RustySynth 1.3.7 already needed it, through `is_multiple_of`); an older compiler now says so.
+- `midly` is used without its default features, which pulled in `rayon` for nothing.
+- The fixtures of two unit tests are in the package, so the tests pass from the published crate.
+
 # v0.1.0
 
 First release of Magnetite-MIDI, a fork of RustySynth. Based on rustysynth v1.3.7; the entries below this one are upstream's history.
